@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "DeformGraph.h"
 
+
 //for debug the graph
 static void _save_pcd2ply(std::vector<Eigen::Vector3d> node_pos,
 std::vector<Eigen::Vector3d> node_norm, const char* filename) {
@@ -34,8 +35,7 @@ std::vector<Eigen::Vector3d> node_norm, const char* filename) {
     }
     fclose(fp);
 }
-static void _save_pcd2obj(std::vector<Eigen::Vector3d> node_pos,
-std::vector<Eigen::Vector3d> node_norm, const char* filename) {
+static void _save_pcd2obj(std::vector<Eigen::Vector3d> node_pos, std::vector<Eigen::Vector3d> node_norm, const char* filename) {
 	TriMesh mesh;
 	mesh.vert_num = node_norm.size();
 	mesh.vertex_coord = node_pos;
@@ -491,6 +491,8 @@ double minimize_guass_newton(Deformer& deformer, Eigen::VectorXd& X) {
 	X = best_X;
     return best_energy;
 }
+
+#include <cfloat>
 static double _getMaxDiagnalCoeff(const Eigen::SparseMatrix<double>& sp_mat)
 {
 	double max_coeff = DBL_MIN;
