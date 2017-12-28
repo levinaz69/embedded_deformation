@@ -3,38 +3,20 @@
 #include <algorithm>
 #include "DeformGraph.h"
 
+
 //for debug the graph
-static void _save_pcd2ply(std::vector<Eigen::Vector3d> node_pos,
-std::vector<Eigen::Vector3d> node_norm, const char* filename) {
-    assert (node_pos.size() == node_norm.size());
-    FILE* fp = fopen(filename, "w");
-    if (!fp) {
-        fprintf(stderr, "warning : unable to open %s when saving pcd to ply file.\n", filename);
-        return;
-    }
-    fprintf(fp, "ply\n");
-    fprintf(fp, "format ascii 1.0\n");
-    fprintf(fp, "element vertex %d\n", node_pos.size());
-    fprintf(fp, "property float x\n");
-    fprintf(fp, "property float y\n");
-    fprintf(fp, "property float z\n");
-    fprintf(fp, "property float nx\n");
-    fprintf(fp, "property float ny\n");
-    fprintf(fp, "property float nz\n");
-    fprintf(fp, "property uchar red\n");
-    fprintf(fp, "property uchar green\n");
-    fprintf(fp, "property uchar blue\n");
-    fprintf(fp, "end_header\n");
-    
-    for (size_t i=0; i<node_pos.size(); ++i) {
-        fprintf(fp, "%f %f %f %f %f %f %d %d %d\n", 
-            node_pos[i][0], node_pos[i][1], node_pos[i][2],
-            node_norm[i][0], node_norm[i][1], node_norm[i][2],
-            0, 255, 255);
-    }
-    fclose(fp);
-}
-static void _save_pcd2obj(std::vector<Eigen::Vector3d> node_pos,
+static void _save_pcd2ply(std::vector<Eigen::Vector3d> node_pos, std::vector<Eigen::Vector3d> node_norm, const char*
+        filename) { assert (node_pos.size() == node_norm.size()); FILE* fp = fopen(filename, "w"); if (!fp) {
+    fprintf(stderr, "warning : unable to open %s when saving pcd to ply file.\n", filename); return; } fprintf(fp,
+            "ply\n"); fprintf(fp, "format ascii 1.0\n"); fprintf(fp, "element vertex %d\n", node_pos.size());
+fprintf(fp, "property float x\n"); fprintf(fp, "property float y\n"); fprintf(fp, "property float z\n"); fprintf(fp,
+        "property float nx\n"); fprintf(fp, "property float ny\n"); fprintf(fp, "property float nz\n"); fprintf(fp,
+            "property uchar red\n"); fprintf(fp, "property uchar green\n"); fprintf(fp, "property uchar blue\n");
+fprintf(fp, "end_header\n");
+
+    for (size_t i=0; i<node_pos.size(); ++i) { fprintf(fp, "%f %f %f %f %f %f %d %d %d\n", node_pos[i][0],
+            node_pos[i][1], node_pos[i][2], node_norm[i][0], node_norm[i][1], node_norm[i][2], 0, 255, 255); }
+    fclose(fp); } static void _save_pcd2obj(std::vector<Eigen::Vector3d> node_pos,
 std::vector<Eigen::Vector3d> node_norm, const char* filename) {
 	TriMesh mesh;
 	mesh.vert_num = node_norm.size();
@@ -44,7 +26,7 @@ std::vector<Eigen::Vector3d> node_norm, const char* filename) {
 }
 void DGraph::build_graph(const TriMesh& mesh, std::vector<int>& sample_index, double _max_dist_neigh/* = 0.1 */, int k_nn/*  = 10 */) {
     p_mesh = &mesh;
-	node_index.resize(sample_index.size()); 
+	node_index.resize(sample_index.size());
 	std::copy(sample_index.begin(), sample_index.end(), node_index.begin());
 	node_pos.resize(node_index.size());
 	node_norm.resize(node_index.size());
@@ -80,8 +62,8 @@ void DGraph::build_neigh() {
     flann::Matrix<double>   query_node(new double[3], 1, 3);
     flann::Matrix<int>      indices_node(new int[k_neigh+1], 1, k_neigh+1);
     flann::Matrix<double>   dists_node(new double[k_neigh+1], 1, k_neigh+1);
-    
-    int node_index = 0; 
+
+    int node_index = 0;
     node_neigh.resize(node_pos.size());
     for (size_t i=0; i<node_pos.size(); ++i) {
         query_node[0][0] = node_pos[i][0]; query_node[0][1] = node_pos[i][1]; query_node[0][2] = node_pos[i][2];
@@ -91,7 +73,7 @@ void DGraph::build_neigh() {
             node_neigh[i].push_back(indices_node[0][j]);
         }
     }
-    
+
     delete []query_node.ptr();
     delete []dists_node.ptr();
     delete []indices_node.ptr();
@@ -163,7 +145,7 @@ void DGraph::deform(TriMesh& d_mesh) {
         }
         for (int j=0; j<n_neigh; ++j)
             weights[j] /= weight_sum;
-        Eigen::Vector3d vert = verts[i], norm = norms[i]; 
+        Eigen::Vector3d vert = verts[i], norm = norms[i];
 		Eigen::Matrix3d rot = Eigen::Matrix3d::Zero(); verts[i] = Eigen::Vector3d(0.0, 0.0, 0.0);
         for (int j=0; j<n_neigh; ++j) {
             int index_cur_node = indices_node[0][j];
@@ -194,7 +176,7 @@ void Deformer::init(DGraph& graph, const std::vector<int>& corr_indexs, const st
     rows = 0;
     int unknown_vn = p_graph->node_pos.size();
     rows += 6*unknown_vn;
-    for (int i=0; i<unknown_vn; ++i) 
+    for (int i=0; i<unknown_vn; ++i)
         rows += 3*p_graph->node_neigh[i].size();
     rows += 3*constraints_index.size();
 
@@ -205,8 +187,8 @@ void Deformer::build_values(const Eigen::VectorXd& x, Eigen::VectorXd& fVec) {
     int row = 0;
     for (int i=0; i<unknown_vn; ++i) {
 		int col = 12*i;
-        Eigen::Vector3d v[3] = {Eigen::Vector3d(x(col+0), x(col+3), x(col+6)), 
-                                Eigen::Vector3d(x(col+1), x(col+4), x(col+7)), 
+        Eigen::Vector3d v[3] = {Eigen::Vector3d(x(col+0), x(col+3), x(col+6)),
+                                Eigen::Vector3d(x(col+1), x(col+4), x(col+7)),
                                 Eigen::Vector3d(x(col+2), x(col+5), x(col+8))};
         fVec[row+0] = weights[0]*(v[0].dot(v[1]));
         fVec[row+1] = weights[0]*(v[0].dot(v[2]));
@@ -216,13 +198,13 @@ void Deformer::build_values(const Eigen::VectorXd& x, Eigen::VectorXd& fVec) {
         fVec[row+5] = weights[0]*(v[2].dot(v[2])) - weights[0];
         row += 6;
 	}
-    
+
     for (int i=0; i<unknown_vn; ++i) {
         int col_i = 12*i;
-        Eigen::Matrix3d R_i; 
+        Eigen::Matrix3d R_i;
         Eigen::Vector3d t_i(x(col_i+9), x(col_i+10), x(col_i+11));
         R_i <<  x(col_i+0), x(col_i+1), x(col_i+2),
-                x(col_i+3), x(col_i+4), x(col_i+5),  
+                x(col_i+3), x(col_i+4), x(col_i+5),
                 x(col_i+6), x(col_i+7), x(col_i+8);
         for (size_t _j=0; _j<p_graph->node_neigh[i].size(); ++_j) {
             int j = p_graph->node_neigh[i][_j];
@@ -259,32 +241,32 @@ void Deformer::build_jacobi(const Eigen::VectorXd& x, Eigen::SparseMatrix<double
         //c1*c2
         fJac.coeffRef(row, col) = weight_rot*x[col+1]; fJac.coeffRef(row, col+3) = weight_rot*x[col+4];
         fJac.coeffRef(row, col+6) = weight_rot*x[col+7]; fJac.coeffRef(row, col+1) = weight_rot*x[col];
-        fJac.coeffRef(row, col+4) = weight_rot*x[col+3]; fJac.coeffRef(row, col+7) = weight_rot*x[col+6]; 
+        fJac.coeffRef(row, col+4) = weight_rot*x[col+3]; fJac.coeffRef(row, col+7) = weight_rot*x[col+6];
         ++row;
         //c1*c3
         fJac.coeffRef(row, col) = weight_rot*x[col+2]; fJac.coeffRef(row, col+3) = weight_rot*x[col+5];
         fJac.coeffRef(row, col+6) = weight_rot*x[col+8]; fJac.coeffRef(row, col+2) = weight_rot*x[col];
-        fJac.coeffRef(row, col+5) = weight_rot*x[col+3]; fJac.coeffRef(row, col+8) = weight_rot*x[col+6]; 
+        fJac.coeffRef(row, col+5) = weight_rot*x[col+3]; fJac.coeffRef(row, col+8) = weight_rot*x[col+6];
         ++row;
         //c2*c3
         fJac.coeffRef(row, col+1) = weight_rot*x[col+2]; fJac.coeffRef(row, col+4) = weight_rot*x[col+5];
         fJac.coeffRef(row, col+7) = weight_rot*x[col+8]; fJac.coeffRef(row, col+2) = weight_rot*x[col+1];
-        fJac.coeffRef(row, col+5) = weight_rot*x[col+4]; fJac.coeffRef(row, col+8) = weight_rot*x[col+7]; 
+        fJac.coeffRef(row, col+5) = weight_rot*x[col+4]; fJac.coeffRef(row, col+8) = weight_rot*x[col+7];
         ++row;
         //c1*c1-1
         fJac.coeffRef(row, col) = 2.0*weight_rot*x[col];
         fJac.coeffRef(row, col+3) = 2.0*weight_rot*x[col+3];
-        fJac.coeffRef(row, col+6) = 2.0*weight_rot*x[col+6]; 
+        fJac.coeffRef(row, col+6) = 2.0*weight_rot*x[col+6];
         ++row;
         //c2*c2-1
         fJac.coeffRef(row, col+1) = 2.0*weight_rot*x[col+1];
         fJac.coeffRef(row, col+4) = 2.0*weight_rot*x[col+4];
-        fJac.coeffRef(row, col+7) = 2.0*weight_rot*x[col+7]; 
+        fJac.coeffRef(row, col+7) = 2.0*weight_rot*x[col+7];
         ++row;
         //c3*c3-1
         fJac.coeffRef(row, col+2) = 2.0*weight_rot*x[col+2];
         fJac.coeffRef(row, col+5) = 2.0*weight_rot*x[col+5];
-        fJac.coeffRef(row, col+8) = 2.0*weight_rot*x[col+8]; 
+        fJac.coeffRef(row, col+8) = 2.0*weight_rot*x[col+8];
         ++row;
     }
 
@@ -309,7 +291,7 @@ void Deformer::build_jacobi(const Eigen::VectorXd& x, Eigen::SparseMatrix<double
             fJac.coeffRef(row+2, col_i+8) = weight_smooth*g[2];
 
 			//t_i t_j
-            fJac.coeffRef(row, col_i+9) = weight_smooth;  
+            fJac.coeffRef(row, col_i+9) = weight_smooth;
             fJac.coeffRef(row+1, col_i+10) = weight_smooth;
             fJac.coeffRef(row+2, col_i+11) = weight_smooth;
 
@@ -347,32 +329,32 @@ void Deformer::build_jacobi(const Eigen::VectorXd& x, Eigen::MatrixXd& fJac) {
         //c1*c2
         fJac(row, col) = weight_rot*x[col+1]; fJac(row, col+3) = weight_rot*x[col+4];
         fJac(row, col+6) = weight_rot*x[col+7]; fJac(row, col+1) = weight_rot*x[col];
-        fJac(row, col+4) = weight_rot*x[col+3]; fJac(row, col+7) = weight_rot*x[col+6]; 
+        fJac(row, col+4) = weight_rot*x[col+3]; fJac(row, col+7) = weight_rot*x[col+6];
         ++row;
         //c1*c3
         fJac(row, col) = weight_rot*x[col+2]; fJac(row, col+3) = weight_rot*x[col+5];
         fJac(row, col+6) = weight_rot*x[col+8]; fJac(row, col+2) = weight_rot*x[col];
-        fJac(row, col+5) = weight_rot*x[col+3]; fJac(row, col+8) = weight_rot*x[col+6]; 
+        fJac(row, col+5) = weight_rot*x[col+3]; fJac(row, col+8) = weight_rot*x[col+6];
         ++row;
         //c2*c3
         fJac(row, col+1) = weight_rot*x[col+2]; fJac(row, col+4) = weight_rot*x[col+5];
         fJac(row, col+7) = weight_rot*x[col+8]; fJac(row, col+2) = weight_rot*x[col+1];
-        fJac(row, col+5) = weight_rot*x[col+4]; fJac(row, col+8) = weight_rot*x[col+7]; 
+        fJac(row, col+5) = weight_rot*x[col+4]; fJac(row, col+8) = weight_rot*x[col+7];
         ++row;
         //c1*c1-1
         fJac(row, col) = 2.0*weight_rot*x[col];
         fJac(row, col+3) = 2.0*weight_rot*x[col+3];
-        fJac(row, col+6) = 2.0*weight_rot*x[col+6]; 
+        fJac(row, col+6) = 2.0*weight_rot*x[col+6];
         ++row;
         //c2*c2-1
         fJac(row, col+1) = 2.0*weight_rot*x[col+1];
         fJac(row, col+4) = 2.0*weight_rot*x[col+4];
-        fJac(row, col+7) = 2.0*weight_rot*x[col+7]; 
+        fJac(row, col+7) = 2.0*weight_rot*x[col+7];
         ++row;
         //c3*c3-1
         fJac(row, col+2) = 2.0*weight_rot*x[col+2];
         fJac(row, col+5) = 2.0*weight_rot*x[col+5];
-        fJac(row, col+8) = 2.0*weight_rot*x[col+8]; 
+        fJac(row, col+8) = 2.0*weight_rot*x[col+8];
         ++row;
     }
 
@@ -397,7 +379,7 @@ void Deformer::build_jacobi(const Eigen::VectorXd& x, Eigen::MatrixXd& fJac) {
             fJac(row+2, col_i+8) = weight_smooth*g[2];
 
 			//t_i t_j
-            fJac(row, col_i+9) = weight_smooth;  
+            fJac(row, col_i+9) = weight_smooth;
             fJac(row+1, col_i+10) = weight_smooth;
             fJac(row+2, col_i+11) = weight_smooth;
 
@@ -422,25 +404,19 @@ void Deformer::build_jacobi(const Eigen::VectorXd& x, Eigen::MatrixXd& fJac) {
     return;
 }
 
-#define NOMINMAX	
-#include <Windows.h>
+#define NOMINMAX
+#include <chrono>
 class Timer {
 public:
     inline void tic() {
-        _tic = getTime();
+        _tic = std::chrono::high_resolution_clock::now();
     }
     inline long toc() {
-        _toc = getTime();
-        return _toc - _tic;
+        _toc = std::chrono::high_resolution_clock::now();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(_toc - _tic).count();
     }
 private:
-    inline long getTime() {
-        SYSTEMTIME t;
-        GetSystemTime(&t);
-        return ((t.wHour*60 + t.wMinute)*60 +t.wSecond)*1000 + t.wMilliseconds;
-    }
-private:
-    long _tic, _toc;
+    std::chrono::high_resolution_clock::time_point _tic, _toc;
 };
 double minimize_guass_newton(Deformer& deformer, Eigen::VectorXd& X) {
 
@@ -448,11 +424,11 @@ double minimize_guass_newton(Deformer& deformer, Eigen::VectorXd& X) {
 	Eigen::SparseMatrix<double> fJac(deformer.rows, deformer.cols);
 	fJac.reserve(Eigen::VectorXi::Constant(deformer.cols, 3*deformer.p_graph->k_neigh)); /* or reserve bigger space for each column */
 	Eigen::SimplicialCholesky<Eigen::SparseMatrix<double>> solver;
-    double eps_break_condition[3] = {1e-6, 1e-2, 1e-3}; 
+    double eps_break_condition[3] = {1e-6, 1e-2, 1e-3};
 	double pre_energy = 0, cur_energy = 0, best_energy = 1e10;
 	Eigen::VectorXd pre_X, best_X;
 	Eigen::VectorXd pre_fVec, best_fVec;
-    
+
     deformer.build_values(X, fVec);
     cur_energy = best_energy = sqrt(fVec.dot(fVec))*0.5;
 
@@ -497,7 +473,8 @@ double minimize_guass_newton(Deformer& deformer, Eigen::VectorXd& X) {
 	X = best_X;
     return best_energy;
 }
-static double _getMaxDiagnalCoeff(const Eigen::SparseMatrix<double>& sp_mat) 
+#include <cfloat>
+static double _getMaxDiagnalCoeff(const Eigen::SparseMatrix<double>& sp_mat)
 {
 	double max_coeff = DBL_MIN;
 	assert (sp_mat.rows() == sp_mat.cols());
@@ -572,7 +549,7 @@ double minimize_levenberg_marquardt(Deformer& deformer, Eigen::VectorXd& X) {
         } else {
             mu = mu*nu; nu = 2*nu;
         }
-    }	
+    }
 	printf("iter = %d\tbest_energy = %lf\n", iter, best_energy);
 	return best_energy;
 }
@@ -600,7 +577,7 @@ double optimize_once(DGraph& graph, std::vector<int>& constraints_index,
 	double min_energy = minimize_guass_newton(*p_deformer, x);
     dprintf(stderr, "minimize_guass_newton time useage %ldms\n", tt.toc());
 #endif
-	// update the graph	
+	// update the graph
 	graph.update_graph(x);
 
 	delete p_deformer;
@@ -617,7 +594,7 @@ double optimize_once(DGraph& graph, std::vector<int>& constraints_index,
 
 //convert the trimesh to the point cloud data with positions and normals.
 static pcl::PointCloud<pcl::PointNormal>::Ptr
-_trimesh2pcl_data(const TriMesh& trimesh) {	
+_trimesh2pcl_data(const TriMesh& trimesh) {
     pcl::PointCloud<pcl::PointNormal>::Ptr out(new pcl::PointCloud<pcl::PointNormal>);
 	out->points.reserve(trimesh.vert_num);
     int vi = 0;
@@ -641,7 +618,7 @@ void mesh_sampling(const TriMesh& mesh, std::vector<int>& sample_index, double m
 	std::vector<int> normal_sampling_indices;
 	std::vector<int> uniform_sampling_indices;
 
-	const int NORMAL_SAMPLE_BIN_NUMBER = 30; 
+	const int NORMAL_SAMPLE_BIN_NUMBER = 30;
 	const int NORMAL_SAMPLE_NUMBER = 200;
 	if (1)
 	{
@@ -694,7 +671,7 @@ void mesh_sampling(const TriMesh& mesh, std::vector<int>& sample_index, double m
 	std::sort(normal_sampling_indices.begin(), normal_sampling_indices.end());
 
 	std::merge(uniform_sampling_indices.begin(), uniform_sampling_indices.end(),
-		normal_sampling_indices.begin(), normal_sampling_indices.end(), 
+		normal_sampling_indices.begin(), normal_sampling_indices.end(),
 		sample_index.begin());
 	std::vector<int>::iterator last_it = std::unique(sample_index.begin(), sample_index.end());
     sample_index.erase(last_it, sample_index.end());
@@ -736,7 +713,7 @@ void boundary_estimate(const TriMesh& mesh, std::vector<int>& boundaryIndicator,
             {
                 (*boundaries).points[indices[j]].boundary_point = 2;
             }
-            //std::cerr << indices.size() << " " << std::endl;		
+            //std::cerr << indices.size() << " " << std::endl;
         }
     }
 
