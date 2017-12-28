@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(embedded_deformation)
 
+MESSAGE(STATUS "System: " ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION})
 MESSAGE(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})
 MESSAGE(STATUS "This is SOURCE dir " ${PROJECT_SOURCE_DIR})
 
@@ -23,7 +24,8 @@ LINK_DIRECTORIES(${PCL_LIBRARY_DIRS})
 find_package(GLUT REQUIRED)
 INCLUDE_DIRECTORIES(${GLUT_INCLUDE_DIR})
 
-include(FindOpenMP)
+#include(FindOpenMP)
+find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
